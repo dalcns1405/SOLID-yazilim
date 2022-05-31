@@ -1,0 +1,357 @@
+CANSU DAL
+18253039
+
+
+SOLID Tasarım Prensipleri — C#
+
+S — SRP — Single responsibility principle (Tek Sorumluluk Prensibi)
+O — OCP — Open Closed Principle (Açık Kapalı Prensibi)
+L — LSP — Liskov Substitution Principle (Liskov Yerine Geçme Prensibi)
+I — ISP — Interface Segregation Principle (Arayüz Ayrımı Prensibi)
+D — DIP — Dependency Inversion Principle (Bağımlılıkların Tersine Çevrilmesi Prensibi)
+
+
+SRP — Single Responsibility Principle (Tek Sorumluluk Prensibi)
+
+Önceki hali----------
+class Customer {
+    public void Login(string username, string passwd) {}
+    public void Register(string username, string passwd, string email) {
+        // ...
+        this.SendEmail("Kaydınız alınmıştır...");
+        // ...
+    }
+    void SendEmail(string message) {}
+}
+
+
+Bu sınıfın SRP uygulanmış hali---------
+class Customer {
+    public void Login(string username, string passwd) {}
+    public void Register(string username, string passwd, string email) {
+        EmailSender emailSender = new EmailSender();
+        emailSender.SendEmail("Kaydınız alınmıştır...");
+    }
+}
+
+class EmailSender {
+    public void SendEmail(string message) {}
+}
+
+
+OCP — Open Closed Principle (Açık Kapalı Prensibi)
+
+Önceki hali-----------
+namespace OCP.Before
+{
+    class Kare
+    {
+        public int kenar { get; set; }
+        public Kare(int kenari)
+        {
+            kenar = kenari;
+        }
+    }
+
+    class Daire
+    {
+        public int yaricap { get; set; }
+        public Daire(int yaricapi)
+        {
+            yaricap = yaricapi;
+        }
+    }
+
+    class AlanToplamiHesaplama
+    {
+        public double AlanToplamlari(object[] sekiller)
+        {
+            double alanToplami = 0;
+
+            foreach (object sekil in sekiller)
+            {
+                if (sekil is Kare)
+                {
+                    alanToplami += System.Math.Pow(((Kare)sekil).kenar, 2);
+                }
+                else if (sekil is Daire)
+                {
+                    alanToplami += 3.14 * System.Math.Pow(((Daire)sekil).yaricap, 2);
+                }
+            }
+
+            return alanToplami;
+        }
+    }
+
+}
+
+
+OCP presibini uygulanmış hali-------
+namespace OCP.After
+{
+    abstract class Sekil
+    {
+        public abstract double Alan();
+    }
+
+    class Kare : Sekil
+    {
+        public int kenar { get; set; }
+        public Kare(int kenari)
+        {
+            kenar = kenari;
+        }
+        public override double Alan()
+        {
+            return System.Math.Pow(kenar, 2);
+        }
+    }
+
+    class Daire : Sekil
+    {
+        public int yaricap { get; set; }
+        public Daire(int yaricapi)
+        {
+            yaricap = yaricapi;
+        }
+        public override double Alan()
+        {
+            return 3.14 * System.Math.Pow(yaricap, 2);
+        }
+    }
+
+    class AlanToplamiHesaplama
+    {
+        public double AlanToplamlari(Sekil[] sekiller)
+        {
+            double alanToplami = 0;
+
+            foreach (Sekil sekil in sekiller)
+                alanToplami += sekil.Alan();
+
+            return alanToplami;
+        }
+    }
+
+}
+
+
+
+LSP — Liskov Substitution Principle (Liskov Yerine Geçme Prensibi)
+
+Önceki hali-----------
+namespace LSP.Before
+{       
+    public class Kus
+    {
+        public int KanatAraligi { get; set; }
+        public string LatinceAdi { get; set; }
+        
+        public virtual double UcmaMesafesi()
+        {
+            double ucmaMesafesiniHesapla = 0;
+            return ucmaMesafesiniHesapla;
+        }        
+    }
+
+    public class Penguen : Kus
+    {        
+        public override double UcmaMesafesi()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+}
+
+
+LSP presibini uygulanmış hali-------
+namespace LSP.After
+{       
+    public interface IUcabilir
+    {
+        public double UcmaMesafesi();        
+    }
+    public class Kus
+    {        
+        public int KanatAraligi { get; set; }
+        public string LatinceAdi { get; set; }
+       
+    }
+
+    public class Baykus : Kus, IUcabilir
+    {
+        public double UcmaMesafesi()
+        {
+            double ucmaMesafesiniHesapla = 1000;
+            return ucmaMesafesiniHesapla;
+        }
+    }
+
+    public class Penguen : Kus
+    {        
+        
+    }
+
+}
+
+ISP — Interface Segregation Principle (Arayüz Ayrımı Prensibi)
+Kullanıcılar, kullanmadıkları arayüzlere veya metodlara bağımlı olmaya zorlanmamalıdır.
+
+Önceki hali-----------
+namespace ISP.Before
+{
+    public interface ICar
+    {
+        public int getMake();
+        public int getYear();
+        public int getEngineSize();
+        public int getHorsePowerOfEngine();
+        public string getFuelType(); 
+        public string getTransmissionType();
+        public int getTranmissionSpeed(); 
+    }
+
+    public interface IElectricCar : ICar
+    {
+        public int getBatteryType();
+        public int getBatteryVoltage();     
+        public int getRange();    
+    }
+
+}
+
+ISP presibini uygulanmış hali-------
+namespace ISP.After
+{
+    public interface ICarCommon 
+    {
+        public int getMake();
+        public int getYear();                
+    }    
+
+    public interface IElectricEngine
+    {
+        public int getBatteryVoltage();
+        public int getBatteryType();
+        public int getRange();
+    }
+    
+    public interface ICombustionEngine
+    {
+        public int getHorsePowerOfEngine();
+        public int getEngineSize();
+        public string getFuelType(); 
+    }
+    
+    public interface ICar : ICarCommon, ICombustionEngine
+    {                
+    }
+
+    public interface IElectricCar : ICarCommon, IElectricEngine
+    {      
+    }
+
+DIP — Dependency Inversion Principle (Bağımlılıkların Tersine Çevrilmesi Prensibi)
+
+Önceki hali-----------
+namespace DIP.Before
+{
+    public class Copy
+    {
+        KeyboardReader _keyboardReader;
+        PrinterWriter _printerWriter;
+
+        public Copy()
+        {
+            _keyboardReader = new KeyboardReader();
+            _printerWriter = new PrinterWriter();
+        }
+        public void CopyTo()
+        {    
+            string copyText = _keyboardReader.ReadKeyboard();
+            _printerWriter.WritePrinter(copyText);
+        }
+    }
+
+    public class KeyboardReader
+    {
+        public string ReadKeyboard()
+        {   
+            // ....
+            string dummy = "ABC";
+            return dummy; 
+        }
+    }
+
+    public class PrinterWriter
+    {
+        public void WritePrinter(string msg)
+        {   
+            // ....             
+        }
+    }
+
+}
+DIP presibini uygulanmış hali------
+namespace DIP.After
+{
+    public class Copy
+    {
+        IReader _reader;
+        IWriter _writer;
+
+        public Copy(IReader reader, IWriter writer)
+        {
+            _reader = reader;
+            _writer = writer;
+        }
+        public void CopyTo()
+        {    
+            string copyText = _reader.ReadFrom();
+            _writer.WriteTo(copyText);
+        }
+    }
+
+    public interface IReader
+    {
+        public string ReadFrom();
+    }
+
+    public interface IWriter
+    {
+        public void WriteTo(string msg);
+    }
+
+    public class KeyboardReader : IReader
+    {
+        public string ReadFrom()
+        {
+            return "ReadFrom() function";
+        }
+    }
+    public class FileReader : IReader
+    {
+        public string ReadFrom()
+        {
+            return "ReadFrom() function";
+        }
+    }
+    public class PrinterWriter : IWriter
+    {
+        public void WriteTo(string msg)
+        {
+            //...
+        }
+    }
+
+    public class FileWriter : IWriter
+    {
+        public void WriteTo(string msg)
+        {
+            //...
+        }
+    }
+
+}
